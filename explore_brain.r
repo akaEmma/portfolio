@@ -6,6 +6,7 @@ require("oro.nifti")
 library(oro.nifti)
 library(oro.dicom)
 
+pname = "your pname here"  # will be needed in most of these functions.
 
 #Read in an image that represents a single slice of a brain.
 #It assumes a specific file naming convention and it assumes that the file is of DICOM format.
@@ -17,7 +18,6 @@ get_dslice <- function(pname, string_num) {
         return(myslice)
 }
 
-pname = "your pname here"
 #get a slice into memory
 if(!exists("myslice")) {
         myslice = get_dslice(pname, 11)
@@ -56,14 +56,15 @@ prt_dslice(myslice)
 # This function reads multiple slice files from the input pathname.
 # range beginning and end may be numbers or strings.
 # Assumes that file names follow a specific naming convenstion, as shown in the function get_dslice() above.
+# There are only 22 images in my directory, and that will commonly be the case for other people because
+#       it is currently the convention to have 22 MRI DICOM images. 
 
 see_slices <- function(pname, range_beg, range_end) {
         try((0 < as.numeric(range_beg) &&  as.numeric(range_end) < 23), 
             TRUE)       #quit if num outside range
         for(i in as.numeric(range_beg):as.numeric(range_end)) {
                 if(nchar(i) == 1){ #check each file in the range
-                        p = paste("0", as.character(i), 
-                                  sep = "")
+                        p = paste("0", as.character(i), sep = "")
                 }
                 else {
                         p = as.character(i)
