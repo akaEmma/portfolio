@@ -8,20 +8,20 @@ library(oro.dicom)
 
 
 #Read in an image that represents a single slice of a brain.
-#It assumes a specific file nameing convention and it assumes that the file is of DICOM format.
+#It assumes a specific file naming convention and it assumes that the file is of DICOM format.
 
 get_dslice <- function(pname, string_num) {
         fname = paste("IM-0001-00", string_num, ".dcm", sep = "")
         pfname = (paste(pname, fname, sep = ""))
-        if(!exists("myslice")){
-                myslice= readDICOM(pfname)
-        }
+        myslice= readDICOM(pfname)
         return(myslice)
 }
 
 pname = "your pname here"
 #get a slice into memory
-myslice = get_dslice(11)
+if(!exists("myslice")) {
+        myslice = get_dslice(pname, 11)
+}
 
 #look at it
 class(myslice)
