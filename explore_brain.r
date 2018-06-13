@@ -53,9 +53,9 @@ prt_dslice(myslice)
 
 # Now mess about looking for the most interesting image.
 
-# This function reads multiple slice files from the default directory.
+# This function reads multiple slice files from the input pathname.
 # range beginning and end may be numbers or strings.
-# Assumes files are in a the working directory and that file names follow a specific naming convenstion, as shown in the function.
+# Assumes that file names follow a specific naming convenstion, as shown in the function get_dslice() above.
 
 see_slices <- function(pname, range_beg, range_end) {
         try((0 < as.numeric(range_beg) &&  as.numeric(range_end) < 23), 
