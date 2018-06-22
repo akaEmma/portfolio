@@ -68,7 +68,7 @@ str(myslice$hdr[[1]])
 
 #Parameters:    
 #       - "1:d[1]" means take all the rows    
-#       - "1:d[2]" means take ll the columns    
+#       - "1:d[2]" means take all the columns    
 #       - t() transposes the image. 
 # Pass myslice, which is what is returned by the get_dslice() function above.
 
