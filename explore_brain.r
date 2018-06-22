@@ -20,6 +20,7 @@ library(oro.dicom)
 #In my personal copy of this code I have set it to be where I keep the .dcm data files. 
 
 ##############
+             #
 #Read in an image that represents a single slice of a brain.
 #This function assumes a specific file naming convention common to .dcm files. 
 #       For instance, my files have names like "IM-001-0011.dcm" or "IM-001-0009.dcm".
@@ -37,6 +38,7 @@ get_dslice <- function(pname, n) {
         myslice= readDICOM(pfname)
         return(myslice)
 }
+               #
 ################
 
 #get a slice into memory
@@ -60,6 +62,7 @@ names(myslice$hdr[[1]])
 str(myslice$hdr[[1]])
 
 #################
+                #
 # Now look at the image the data structure above represents.
 #Steps used to see the image include transposing it (because it is a matrix) and using the image() function. 
 
@@ -73,11 +76,13 @@ prt_dslice <- function(myslice) {
         d = dim(t(myslice$img[[1]]))
         image(1:d[1], 1:d[2], t(myslice$img[[1]]), col = gray(0:64/64))
 }
+               #
 ################
 
 prt_dslice(myslice)
 
 ################
+               #
 # Now mess about looking for the most interesting image.
 
 # This function reads multiple slice files from the input pathname.
@@ -100,5 +105,6 @@ see_slices <- function(pname, range_beg, range_end) {
                 prt_dslice(myslice)
         } 
 }
+                  #
 ###################
 see_slices(9, 12)
