@@ -1,4 +1,5 @@
-# These functions are for my personal use to load, print, and generally explore some brain images. They have not been 
+#Code developed by Sheila Braun, June 2018.  
+#These functions are for my personal use to load, print, and generally explore some brain images. They have not been 
 #       properly generalized, but if I end up using them a lot I will make the necessary changes. 
 # I have not broken the functions into separate files because I wanted to upload them here in a single file for easy reading.
 
