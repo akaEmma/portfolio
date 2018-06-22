@@ -19,6 +19,8 @@ library(oro.dicom)
 #pname = "your pname here" will be needed in most of these functions. 
 #In my personal copy of this code I have set it to be where I keep the .dcm data files. 
 
+##FUNCTIONS##
+
 ##############
              #
 #Read in an image that represents a single slice of a brain.
@@ -41,25 +43,6 @@ get_dslice <- function(pname, n) {
                #
 ################
 
-#get a slice into memory
-#first check if it is already in memory to save loading time if possible. 
-if(!exists("myslice")) {
-        myslice = get_dslice(pname, 11)
-}
-
-#look at the slice
-class(myslice)
-names(myslice)
-
-# Look more deeply into the file structure:
-
-str(myslice)
-class(myslice$hdr[[1]])
-class(myslice$img)
-class(myslice$img[[1]])
-dim(myslice$img[[1]])
-names(myslice$hdr[[1]])
-str(myslice$hdr[[1]])
 
 #################
                 #
@@ -79,7 +62,6 @@ prt_dslice <- function(myslice) {
                #
 ################
 
-prt_dslice(myslice)
 
 ################
                #
@@ -107,4 +89,36 @@ see_slices <- function(pname, range_beg, range_end) {
 }
                   #
 ###################
+
+##MAIN CODE##
+
+#get a slice into memory
+#first check if it is already in memory to save loading time if possible. 
+if(!exists("myslice")) {
+        myslice = get_dslice(pname, 11)
+}
+
+#look at the slice
+class(myslice)
+names(myslice)
+
+# Look more deeply into the file structure:
+
+str(myslice)
+class(myslice$hdr[[1]])
+class(myslice$img)
+class(myslice$img[[1]])
+dim(myslice$img[[1]])
+names(myslice$hdr[[1]])
+str(myslice$hdr[[1]])
+
+# print the slice
+prt_dslice(myslice)
+
+# get and print multiple slices to see where the interesting imagery is. 
+# for instance, my data has a brain lesion somewhere between images 9 and 12.
+# I load and print them all so I can scroll through the images.
+
 see_slices(9, 12)
+
+## End of Program ##
