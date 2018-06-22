@@ -15,15 +15,19 @@ require("oro.nifti")
 library(oro.nifti)
 library(oro.dicom)
 
-pname = "your pname here"  # will be needed in most of these functions. In my personal copy I have set it to be where I keep the .dcm data files. 
+#pname = "your pname here" will be needed in most of these functions. 
+#In my personal copy of this code I have set it to be where I keep the .dcm data files. 
 
+##############
 #Read in an image that represents a single slice of a brain.
-#This function assumes a specific file naming convention common to .dcm files and it assumes that the file is of DICOM format.
-#       "pname" is the pathname to the .dcm files. 
-#       "n" is the number of the dcm file. For instance, these files often have names like "IM-001-0011.dcm" or "IM-001-0009.dcm". 
-#               If you pass n = 11 to this function, it will look for "IM-001-0011.dcm". 
-#               If you pass it n = 9, it will look for "IM-001-0009.dcm".
-#               "n" can be either numeric or string.
+#This function assumes a specific file naming convention common to .dcm files. 
+#       For instance, my files have names like "IM-001-0011.dcm" or "IM-001-0009.dcm".
+#This function also assumes that the file is of DICOM format.
+# "pname" is the pathname to the .dcm files. 
+# "n" is the number of the dcm file.  
+#       If you pass n = 11 to this function, it will look for "IM-001-0011.dcm". 
+#       If you pass it n = 9, it will look for "IM-001-0009.dcm".
+#       "n" can be either numeric or string.
 #               
 
 get_dslice <- function(pname, n) {
@@ -32,6 +36,7 @@ get_dslice <- function(pname, n) {
         myslice= readDICOM(pfname)
         return(myslice)
 }
+################
 
 #get a slice into memory
 #first check if it is already in memory to save loading time if possible. 
@@ -53,6 +58,7 @@ dim(myslice$img[[1]])
 names(myslice$hdr[[1]])
 str(myslice$hdr[[1]])
 
+#################
 # Now look at the image the data structure above represents.
 #Steps used to see the image include transposing it (because it is a matrix) and using the image() function. 
 
@@ -66,8 +72,11 @@ prt_dslice <- function(myslice) {
         d = dim(t(myslice$img[[1]]))
         image(1:d[1], 1:d[2], t(myslice$img[[1]]), col = gray(0:64/64))
 }
+################
+
 prt_dslice(myslice)
 
+################
 # Now mess about looking for the most interesting image.
 
 # This function reads multiple slice files from the input pathname.
@@ -90,4 +99,5 @@ see_slices <- function(pname, range_beg, range_end) {
                 prt_dslice(myslice)
         } 
 }
+###################
 see_slices(9, 12)
