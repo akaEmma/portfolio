@@ -83,7 +83,7 @@ prt_dslice(myslice)
 # range beginning and end may be numbers or strings.
 # This function assumes that file names follow the naming convention as shown in the function get_dslice() above.
 # There are only 22 images in my directory, and that will commonly be the case for other people because
-#       it is currently the convention to have 22 MRI DICOM images. 
+#       it is currently the convention to have 22 MRI DICOM images to show one brain. 
 
 see_slices <- function(pname, range_beg, range_end) {
         try((0 < as.numeric(range_beg) &&  as.numeric(range_end) < 23), 
