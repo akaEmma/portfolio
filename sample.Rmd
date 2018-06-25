@@ -1,0 +1,497 @@
+---
+title: "Sample"
+author: "Sheila Braun"
+date: "June 23, 2018"
+output: 
+  html_document: 
+    fig_caption: yes
+    keep_md: yes
+    theme: journal
+    toc: yes
+    toc_depth: 5
+---
+#Assumptions#
+
+This documentation and its accompanying code are for the following target audience:
+
+- Someone who is unfamiliar with the client's projects
+
+- Someone who is new to coding 
+
+- Someone who understands statistics
+
+Therefore the documentation contains careful explanations of the project, the data, and the programming logic. The statistics are expected to be obvious to the reader, so I spent little time justifying statistical decisions or explaining the contents of, for example, a pairs plot. 
+
+
+#Project Settings#
+
+The following code provides later code in the file with needed source addresses for subroutines and R libraries.
+
+```{r setup}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE)
+options(scipen = 9999, decimal = 3) #turn off scientific notation
+source("calc_cod_scales.r")
+source("calc_emu_scales.r")
+source("calc_viability.r")
+source("getfileinfo.r")
+source("clean_var_names.r")
+source("round_df.r")
+source("specify_decimal.r")
+source("calc_viability.r")
+source("get_interesting_vars.r")
+source("get_subsets.r")
+source("render_boxplot.r")
+source("simple_bars.r")
+source("rename_cods_emus_cysts.r")
+
+#Note: the order of the libraries matters. In some cases I reload them in the code to avoid errors of one package masking a function from another package. 
+
+library(knitr)
+library(ggthemes)
+library(lattice)
+library(psych)
+library(readr)
+library(RColorBrewer)
+library(Hmisc)
+library(likert)
+library(spatstat.utils)
+library(corrplot)
+library(GGally)
+library(tibble)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(lubridate)
+```
+
+#Project Description#
+
+This code is for the projects for one of my clients. Each time we do a project, she provides a new data set, which we anlyze; then we report the findings to her in the form of a presentation that she can use to communicate the findings to *her* clients. After doing the analysis and creating the presentation slides, we merge the project's data with the main dataset that is comprised of all the previous projects and submit the presentation and the data sets (current and merged) to the client. 
+
+Project deliverables are these:
+
+* Slide presentation in PowerPoint (.pptx) format
+
+* Word document containing correlations among data types for the merged data set
+
+* Word document containing the scale means, Cronbach's alpha eyesights for calculated scales, and means for other variables used in the slide presentation
+
+* Excel documents containing some specific correlation matrices. These documents are in landscape format and must be scaled to fit on a single page. They are for the client to prepare for her presentations, but they don't go into any presentation slides--at least not in the same format. 
+
+* The current data set in SPSS data format
+
+* The overall (merged from all previous projects including this one) data set, also in SPSS format
+
+##History##
+
+Before I joined the project, the client's deliverables were produced by hand each time using menu functions in SPSS and Excel. This required significant training when a new statistician took over the task: the data are complex and we get a lot out of them--which means running many, many procedures in the correct order and on the correct variables.
+
+After I joined the project, I wrote some macros in SPSS. Those macros were made quickly and without much concern for good coding practices because I had to write them quickly. There was little project time budgeted to the task. Those old macros still work, but I am concerned that anyone besides me would not be able to understand *how* they work. SPSS's macro language is cumbersome and difficult to follow. Although there are other people on the team, I am the only one who can fix a broken macro. This is not an ideal situation for our client. 
+
+Having written the macros, the obvious question became "Why not write one giant macro for the whole project?" The answer is that there is no reason at all given the many statistics languages, packages, and libraries available that can help not only with the analysis, but also with our multi-format set of deliverables. 
+
+##Why R?##
+
+R is a better choice than SPSS for this client because one can write object-oriented, modular code and produce any number of output types, including Word, Excel, and PowerPoint. The projects follow a specific set of steps, so there is no reason that an R program cannot follow those same steps. Each project has its own set of parameters, but those paramaters are manageable with some good coding. For instance, the number and type of gratitude variables (more on them later) changes from one project to the next. The demographic variables also vary from project to project. However, both of these variations occur within a standard set of possible gratitude and demographic variables. In addition, projects can be "open enrollment" (a combination of my client's clients) or standard, for one individual company; but the changes related to these two formats are, again, within an easily defined scope that can be included in the program.  
+
+R also has a very clever function called readr(), which is a package that allows one to put R output into PowerPoint files and even to create individual PowerPoint slides. Some of my functions will most likely make use of readr() in order to maintain the current look and feel of my client's presentations (although we will, of course, offer alternative designs as we find them if we think they are cool).
+
+Upon my completion of the main function and the requisite called functions, my client will be able to run an analysis in minutes instead of days and produce a standardized slide show for her presentations without having to pay us our hourly rate. This is good for everybody, because, after all, we may not be around forever. 
+
+
+#Project Data#
+
+Project data is made up of survey results. The survey gathers data from several conceptual categories. 
+
+##Data Description##
+
+Each project's data set breaks down into categories thus:
+
+* **inputs**, likert data used to calculate scales.
+
+* **dems**, a combination of scalar and categorical demographic variables. They vary from project to project. The client supplies a list of any new demographic along with any factor level names and indices. 
+
+* **cyst**, likert data concerning eyesight accuracy. They are used as scales but don't need to be calculated. 
+
+* **cods** are continuous, non-likert scale variables concerning fishy traits. We calculate these from inputs.
+
+* **emus** are continuous, non-likert scale variables concerning birdlike or numerical traits. We calculate these from inputs as well.
+
+* **bfts** are (mostly) likert data concerning gratitudes. They are already scales. Most of them don't need to be calcuated, but one gratitude variable, *viability*, does have to be calcuated from input variables. 
+
+* **irrelevant** is a set of variables that have been collected along with this or a previous data set but that we do not (usually) use in the analysis (e.g. *LocationLongitude*).
+
+##Data Housekeeping Code##
+
+Start by getting basic information about the project and the data, most importantly, the project name, path, and source file name. Then read the data into a tibble (a type of data table) called *b*.
+
+```{r getData, echo=TRUE, message=FALSE, warning=FALSE}
+
+# get the file information - can use functions or input it manually.
+# use either this:
+# getfileinfo()
+# or this:
+pname <- "C:\\Users\\foo\\bar\\foobar\\R Code"
+fname <- "sample.csv"
+pfname <- paste(pname, fname, sep = "\\")
+outname <- "boo.csv"
+
+# to get the file
+# read it into tibble format (it's nicer)
+
+b <- read_csv(file=fname, 
+              col_names = TRUE)
+```
+
+###Tidy Variable Names: The Problem###
+
+We tidy the variable names because for some reason they're coming from the cloud survey server with some garbage prefixing them. This started happening without warning and without the client's knowledge about a year ago, I think because someone altered the survey and turned on an automatic variable naming feature without realizing it. Someone could fix this problem at any time and we wouldn't know about it, so we check each time to make sure that the garbage pattern exists among the names. 
+
+The general garbage pattern looks like "opinion1_" as a prefix to a correct variable name. Why not allow the new variable names? Because later in the program we will merge these new data with our overall data set of all previous projects.
+
+####When to Fix the Variable Names####
+
+If any variable has "opinion1_" as a prefix, we know that we have been handed a dataset with garbage prefixes. It is safe to rename the variables. 
+
+####When Not to Fix the Variable Names####
+
+However, if we don't find the pattern exemplified by "opinion1_", then we don't want to change the variable names. Doing so would affect some variables that are properly named yet still have underscores in them (e.g., *team_or*).
+
+###Tidy Variable Names: The Solution###
+
+The variable-changing gsub() logic in the subroutine *clean_var_names()* identifies and discards any characters before and including the first underscore. Note that some variables, like "OrgCult2_act_or", *should* have an underscore in the final variable name. After checking carefully, we have ascertained that it is safe to get rid of what prefixes the first underscore and the underscore itself, but only after checking to make sure that the data contain garbage prefixes.
+
+```{r clean_var_names, echo=TRUE}
+names(b) <- clean_var_names(b)
+```
+
+###Tidy Variable Names: Why Lowercase?###
+
+Our data come to us with no standardization in variable naming practice. Most--but not all--of them are lowercase. In order to work with them without having constantly to double check the case for each variable, we convert them all to lowercase. Normally we could not do this, but this code is being rewritten from SPSS, which is blind to case. Our output data with variables with changed cases can, therefore be used in the original SPSS program. 
+
+Even so, we will be putting the variable names back before returning the data set to the client. At some point we will discuss with the client finding a good naming convention for the variables and using it everywhere. 
+
+```{r lowercase_vars, echo=TRUE}
+oldbnames <- names(b)
+names(b) <- tolower(names(b))   # standardize the names
+```
+
+##Subsetting the Data##
+
+Now that the variable names are correct and manageable, we take subsets of variables. These are the subsets described above as *inputs* (used to create other variables and not used after that), *demographics* (dems), *cyst-related variables* (cysts), *fishys* (cods), *birdlike-numerical* variables (emus), and *gratitudes* (bfts).
+
+###Get Rid of Unused or Irrelevant Variables###
+
+We isolate the relevant variables by selecting what are *not* a set of *irrelevant* variables. We isolate the relevant variables this way because the list of irrelevant variables is stable, whereas some of the relevant variables change from project to project. Once we remuve the irrelevant variables, what remains is what we need to work with. Using this algorithm is likely to kick up only warnings, not error codes; whereas selecting *for* variable names will throw errors, thereby stopping the whole program, if any of those variables are not present in this particular data set. 
+
+NOTE: Update "get_interesting_vars.r" if a new junk variable appears in any of the data sets. It is okay to add names that show up only rarely. 
+
+###Make Subsets and Finalize the Variable List###
+
+I've made a decision to break the data into separate tibbles rather than calling them from within the main tibble using a factor variable that would have *inputs*, *dems*, *cods* *bfts*, *cysts*, and *emus* as its levels. 
+
+The basic algorithm for finding the subsets is to look among the variable names for each subset for any names that match a list of all possible names. Any names that we *don't* find will kick up a warning. After this, we will know all the variables we have in tricky categories such as the demographics (which change from project to project) and gratitude variables (which also change from project to project). Knowing what we have in the data set dictates the contents of the slides.
+
+```{r getInterestingVars, echo=TRUE}
+
+b <- get_interesting_vars(b) #get by excluding irrelevant vars
+inputs <- get_inputs(b) #standard set of vars
+bfts <- get_bfts(b) #derived list
+dems <- get_dems(b) #also derived list
+cysts <- get_cysts(b) #standard set of vars
+
+```
+
+As already noted, the warnings tell us simply which variables in each category we checked for but didn't find. 
+
+##Calculate Scales##
+
+NOTE TO SELF: See if mutate() would be a better choice. 
+
+This code chunk calculates the emu and cod scales, then unites all the data categories into a single tibble (*tib*) so that we can write the output to a csv file. We will archive that file. 
+
+```{r calcScales, echo=TRUE}
+emus <- tbl_df(calc_emu_scales(b))
+cods <- tbl_df(calc_cod_scales(b))
+viability <- calc_viability(b)
+bfts <- add_column(.data = bfts, viability, .before = "commitsmoking")
+rm(viability)
+tib <- tbl_df(cbind(inputs, dems, cods, emus, bfts, cysts))
+tib
+
+#save the clean, specific data set 
+write.table(tib, file = outname, sep = ",")
+
+# set up a working tibble that doesn't have the inputs in it
+names.use <- names(tib)[!(names(tib) %in% names(inputs))]
+wtib <- tib[, names.use]
+```
+
+#Descriptives#
+
+The client likes to see correlations for the cod and emu variable set against each other. In this next code chunk, I am experimenting with different presentation possilities that I will submit to the client. She has been using text output from SPSS and might want to stay with that, but it's good to see what the other options are every now and then. See https://cran.r-project.org/web/packages/corrplot/corrplot.pdf for more information about plotting correlations and for explanations of the various parameters in play in the next code chunk.
+
+NOTE TO SELF: If the client decides to use any of these designs, make sure that the variable names don't get cut off.
+
+```{r cod_emu_cors, echo=TRUE}
+source("flattenCorrMatrix.r")
+M <- rcorr(as.matrix(cods), as.matrix(emus))
+fcm <- flattenCorrMatrix(M$r, M$P)
+m <- rbind(fcm[37:45,], #cods by recipe_rating
+           fcm[46:54,], #cods by tensile_strength
+           fcm[56:64,], #cods by swimming_speed
+           fcm[67:75,], #cods by fin_rpms
+           fcm[79:87,]) #cods by shine
+M
+```
+
+Ordinary correlation plot with the variable order we usually use:
+
+```{r ordinaryCor}
+
+corrplot(M$r, 
+         type = "lower",
+         tl.col = "black",
+         tl.srt = 45)
+```
+
+Correlations with heirarchical clustering. The variables are reordered to reflect the clusters.
+
+```{r clusterCor}
+corrplot(M$r,
+         tl.col = "black",
+         tl.srt = 45,
+         order = "hclust", 
+         addrect = 3)
+```
+
+Other designs are available:
+
+```{r moreCors}
+corrplot(M$r,
+         type="lower", 
+         method = "ellipse",
+         p.mat = M$P, 
+         sig.level = 0.05, 
+         insig = "blank",
+         tl.srt = 45,
+         tl.col = "black")
+corrplot(M$r, type="lower", 
+         method = "pie",
+         p.mat = M$P, 
+         sig.level = 0.05, 
+         insig = "blank",
+         tl.srt = 45,
+         tl.col = "black")
+
+corrplot.mixed(M$r, 
+               lower = "number", 
+               upper = "circle", 
+               tl.pos = c("d",
+                          "lt",
+                          "n"),
+               diag = c("n",
+                        "l",
+                        "u"), 
+               bg = "white", 
+               addgrid.col = "grey",
+               lower.col = NULL, 
+               upper.col = NULL, 
+               plotCI = c("n",
+                          "square",
+                          "circle",
+                          "rect"), 
+               mar = c(0, 0, 0, 0))
+```
+
+Checking the relationships among the variables.
+
+```{r checkrps, echo=TRUE}
+pairs(cods)
+pairs(emus)
+pairs(bfts)
+pairs(cysts)
+```
+
+
+#Incomplete Project Sandbox#
+
+I keep a sandbox section at the end of all in-process projects so that I can experiment with code that I may want to use. Currently, I am using the sandbox for playing with plot designs that the client may like. Some of her current slides are not conveying the information to her clients without significant explanation. We are trying to solve that problem.
+
+If I write something I like, I extract it as a function and use it in the right place in the main program. 
+
+```{r plots, echo=TRUE, message=FALSE, warning=FALSE}
+library(ggthemes)
+theme_set(theme_wsj())
+x <- emus
+y_nm <- "darkness"
+y <- wtib[y_nm]
+        
+mod_names <- names(tib)[(names(tib) %in% c(names(x), y_nm))]
+mod <- tib[, mod_names]
+
+pairs(mod,
+      panel = panel.smooth, 
+      main = "Sample Data",
+      na.action = na.omit)
+summary(lm(wtib$darkness ~ .,
+           data = mod, 
+           na.omit = TRUE))
+
+# This is one of my intrepid instructor's plots with tons of info in it:
+
+g = wrap(ggpairs(mod[,], 
+            lower = list(continuous = "smooth")), params = c(method = "loess"))
+g
+
+```
+
+Use variable labels instead of variable names. NOTE TO SELF: keep both.
+
+```{r renameVars}
+source("rename_cods_emus_cysts.r")
+rename_cods_emus_cysts(cods, emus, cysts)
+```
+
+Working on some bar graphs, starting with the cods, as usual.
+
+
+```{r bargraphs}
+theme_set(theme_few())
+
+barplot(colMeans(cods, na.rm = TRUE),
+        main = "fishy philanthropic eyesights",
+        xlab = "fishy oceanic boating",
+        ylab = "How Characteristic",
+        col = "royal blue",
+        horiz = TRUE)
+barplot(colMeans(bfts, na.rm = TRUE),
+        main = "Employ Sunny gratitudes")
+barplot(colMeans(cysts, na.rm = TRUE),
+        main = "Employee eyesight Intensity and bell-like sounds")
+barplot(colMeans(emus, na.rm = TRUE),
+        main = "numerical gaming",
+        xlab = "numerical oceanic boating",
+        ylab = "Frequency with which Employees Express the opinion")
+```
+
+```{r moreBars}
+d <- colMeans(cods, na.rm = T)
+ht <- nrow(as.data.frame(d))
+
+barplot(d, 
+        xaxt="n", 
+        yaxt="n", 
+        ylab="How Characteristic", 
+        border=F, 
+        width=c(.35), 
+        space=1.8)
+axis(1, 
+     at=(1:length(d))-.26, 
+     labels=names(d),
+     tick=F,
+     family="serif")
+axis(2,
+     at=seq(1, ht, 1),
+     las=2,
+     tick=F,
+     family="serif")
+abline(h=seq(1, ht, 1), 
+       col="white", 
+       lwd=3)
+abline(h=0, 
+       col="gray", 
+       lwd=2)
+text(min(d)/2,
+     max(d)/1.2,
+     pos = 4, 
+     family="serif",
+     "Average fishy oceanic boating Scores")
+
+```
+
+```{r getting_ready_for_the_bars}
+
+main_t_emus <- "Average scores\nnumerical gaming traits"
+main_t_cods <- "Average scores\nfishy gaming traits"
+main_t_bfts <- "Average scores\nSunny gratitudes"
+main_t_cyst <- "Average scores\nemployee eyesight intensity and\nbell-like sounds"
+cod_colour <- "royalblue"
+emu_colour <- "salmon"
+att_colour <- "seagreen3"
+cyst_colour <- "thistle3"
+
+```
+
+I wasn't able to get the next (very repetitive) code to work as a function. The output from knitr was odd and unreadable and the calls failed. It works if I run it line by line, though, so it will probably work outside a knitr file. NOTE TO SELF: figure out why this wont' work properly.
+
+```{r codbars, echo = TRUE}
+
+ss = cods; main_t = main_t_cods; clr = cod_colour
+d <- colMeans(ss,na.rm = T)
+barchart(sort(d), xlab="", ylab="", col = clr, origin=1,  
+         border = "transparent", box.ratio=0.5, 
+         panel = function(x,y,...) {
+                 panel.barchart(x,y,...)
+                 panel.abline(v=seq(1,6,1),
+                              col="white", lwd=3)},
+         par.settings = list(axis.line = list(col = "transparent")))
+ltext(current.panel.limits()$xlim[2]-50, adj=1,  
+      current.panel.limits()$ylim[1]-100,
+      main_t)
+```
+
+
+```{r emubars, echo = TRUE}
+
+ss = emus; main_t = main_t_emus; clr = emu_colour
+d <- colMeans(ss,na.rm = T)
+barchart(sort(d), xlab="", ylab="", col = clr, origin=1,  
+         border = "transparent", box.ratio=0.5, 
+         panel = function(x,y,...) {
+                 panel.barchart(x,y,...)
+                 panel.abline(v=seq(1,6,1),
+                              col="white", lwd=3)},
+         par.settings = list(axis.line = list(col = "transparent")))
+ltext(current.panel.limits()$xlim[2]-50, adj=1,  
+      current.panel.limits()$ylim[1]-100,
+      main_t)
+```
+
+
+
+```{r attbars, echo = TRUE}
+
+ss = bfts; main_t = main_t_bfts; clr = att_colour
+d <- colMeans(ss,na.rm = T)
+barchart(sort(d), xlab="", ylab="", col = clr, origin=1,  
+         border = "transparent", box.ratio=0.5, 
+         panel = function(x,y,...) {
+                 panel.barchart(x,y,...)
+                 panel.abline(v=seq(1,6,1),
+                              col="white", lwd=3)},
+         par.settings = list(axis.line = list(col = "transparent")))
+ltext(current.panel.limits()$xlim[2]-50, adj=1,  
+      current.panel.limits()$ylim[1]-100,
+      main_t)
+```
+
+
+```{r cystbars, echo = TRUE}
+
+ss = cysts; main_t = main_t_cyst; clr = cyst_colour
+d <- colMeans(ss,na.rm = T)
+barchart(sort(d), xlab="", ylab="", col = clr, origin=1,  
+         border = "transparent", box.ratio=0.5, 
+         panel = function(x,y,...) {
+                 panel.barchart(x,y,...)
+                 panel.abline(v=seq(1,6,1),
+                              col="white", lwd=3)},
+         par.settings = list(axis.line = list(col = "transparent")))
+ltext(current.panel.limits()$xlim[2]-50, adj=1,  
+      current.panel.limits()$ylim[1]-100,
+      main_t)
+```
