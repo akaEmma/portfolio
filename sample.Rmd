@@ -196,12 +196,21 @@ I've made a decision to break the data into separate tibbles rather than calling
 The basic algorithm for finding the subsets is to look among the variable names for each subset for any names that match a list of all possible names. Any names that we *don't* find will kick up a warning. After this, we will know all the variables we have in tricky categories such as the demographics (which change from project to project) and gratitude variables (which also change from project to project). Knowing what we have in the data set dictates the contents of the slides.
 
 ```{r getInterestingVars, echo=TRUE}
+#example of "possible variable" vectors:
+#possible_inputs = c("blah", "blah", "blah"...)
+#possible_bfts = c("bft1", "bft2", "bft3"...)
+#possible_dems = c("age", "agerange", "favorite_song"...)
+#possible_cysts = c("volatile", "benign", "imaginary"...)
 
-b <- get_interesting_vars(b) #get by excluding irrelevant vars
-inputs <- get_inputs(b) #standard set of vars
-bfts <- get_bfts(b) #derived list
-dems <- get_dems(b) #also derived list
-cysts <- get_cysts(b) #standard set of vars
+#irrelevant_vars = c("nothingtoseehere", "thevalueofpi", "wheremyhorselives"...)
+
+#NOTE TO SELF: consider putting the variable lists in the subset function so the names aren't globally defined.
+
+b <- get_interesting_vars(b, irrelevant_vars) #get by excluding irrelevant vars
+inputs <- get_subset(b, possible_inputs) 
+bfts <- get_subset(b, possible_bfts) 
+dems <- get_subset(b, possible_dems) 
+cysts <- get_subset(b, possible_cysts) 
 
 ```
 
@@ -245,7 +254,8 @@ m <- rbind(fcm[37:45,], #cods by recipe_rating
            fcm[56:64,], #cods by swimming_speed
            fcm[67:75,], #cods by fin_rpms
            fcm[79:87,]) #cods by shine
-M
+M #have a look
+m #have another look at a less repetitive version
 ```
 
 Ordinary correlation plot with the variable order we usually use:
@@ -317,7 +327,7 @@ pairs(cysts)
 ```
 
 
-#Incomplete Project Sandbox#
+#"Incomplete Project" Sandbox#
 
 I keep a sandbox section at the end of all in-process projects so that I can experiment with code that I may want to use. Currently, I am using the sandbox for playing with plot designs that the client may like. Some of her current slides are not conveying the information to her clients without significant explanation. We are trying to solve that problem.
 
