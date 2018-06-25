@@ -35,24 +35,25 @@ get_interesting_vars <- function(tib, irrelevant_v) {
         tib %>% dplyr:: select(-starts_with("x"))
 }
 
-irrelevant_v <- c("startdate", 
-                    "enddate", 
-                    "status", 
-                    "ipaddress",
-                    "progress", 
-                    "duration (in seconds)",
-                    "duration..in.seconds.",
-                    "finished",
-                    "recordeddate",
-                    "responseid", 
-                    "recipientlastname",
-                    "recipientfirstname", 
-                    "recipientemail",
-                    "externalreference", 
-                    "locationlatitude",
-                    "locationlongitude", 
-                    "distributionchannel",
-                    "userlanguage",
-                    "name")
+#Example:
+# irrelevant_v <- c("startdate", 
+#                    "enddate", 
+#                    "status", 
+#                    "ipaddress",
+#                    "progress", 
+#                    "duration (in seconds)",
+#                    "duration..in.seconds.",
+#                    "finished",
+#                    "recordeddate",
+#                    "responseid", 
+#                    "recipientlastname",
+#                    "recipientfirstname", 
+#                    "recipientemail",
+#                    "externalreference", 
+#                    "locationlatitude",
+#                    "locationlongitude", 
+#                    "distributionchannel",
+#                    "userlanguage",
+#                    "name")
 
-get_interesting_vars(tib, irrelevant_v)
+#get_interesting_vars(tib, irrelevant_v)
