@@ -13,7 +13,7 @@
 
 get_interesting_vars <- function(tib, irrelevant_v) {
 
-        #get a list of names excluding any member of the irrelevant set,
+        #get a list of names we do not want but that we know might be in the data,
         #then subset tib by all except those names
         
         names.use <- names(tib)[!(names(tib) %in% irrelevant_v)]
