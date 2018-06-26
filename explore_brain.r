@@ -47,7 +47,7 @@ get_dslice <- function(pname, n) {
 #################
                 #
 # Now look at the image the data structure above represents.
-#Steps used to see the image include transposing it (because it is a matrix) and using the image() function. 
+#Steps used to see the image include transposing it (which we can do because it is a matrix) and using the image() function. 
 
 #Parameters:    
 #       - "1:d[1]" means take all the rows    
