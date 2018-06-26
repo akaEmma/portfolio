@@ -25,7 +25,7 @@ get_interesting_vars <- function(tib, irrelevant_v) {
         #
         # Using "-starts_with" returns all that don't start with x.
         #       None of our relevant vars begins with x. If that changes,
-        #       this way of deleting the Xs will cause problems.
+        #       this way of deleting the x's will cause problems.
         #       However, it is still the best way because we don't know
         #       what the x's end with. They end with numbers, but we won't
         #       know what they are unless we look. This method is therefore
