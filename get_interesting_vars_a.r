@@ -6,7 +6,7 @@
 # irrelevant_v = vector of vars we don't need 
 #
 #-------------------------------------- 
-# Add items to the irrelevant_V on a   
+# Add items to the irrelevant_v on a   
 #   project-to-project basis. No need   
 #   to delete any names.       
 #########################################
