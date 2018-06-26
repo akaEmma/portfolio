@@ -50,3 +50,4 @@ get_subset <- function(tib, possible_vars) {
 #                    "a",
 #                    "table")
 # get_subset(tib, possible_vars)
+## END OF FILE
