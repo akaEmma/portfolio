@@ -7,11 +7,13 @@
 # possible_vars = A vector of variables that
 #   we want to keep if they're in the data.
 # 
-# NOTE: This is a functon so that we 
-# can store the various variable lists 
+# NOTE: Currently we store the various variable lists 
 # in the data section of the main file and
 # make the same call for each subset we 
-# want to build.
+# want to build. NOTE TO SELF: Consider alternatives
+# like storing the variable lists here or 
+# reading them in automatically from the data 
+# dictionary. 
 # 
 # That makes it easier for a non-programmer
 # to make changes to those lists. They
