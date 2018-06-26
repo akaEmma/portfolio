@@ -15,14 +15,9 @@
 # reading them in automatically from the data 
 # dictionary. 
 # 
-# That makes it easier for a non-programmer
-# to make changes to those lists. They
-# won't have to scroll through the code
-# looking for the lists. 
-#
 #------------------------------------
-#returns a tibble of the subset
-# and a list of the names the function found.
+#returns a tibble of [1]: the subset
+# and [2]: a list of the names the function found.
 ########################################
 
 library(dplyr)
