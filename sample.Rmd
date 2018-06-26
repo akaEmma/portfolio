@@ -185,7 +185,7 @@ Now that the variable names are correct and manageable, we take subsets of varia
 
 ###Get Rid of Unused or Irrelevant Variables###
 
-We isolate the relevant variables by selecting what are *not* a set of *irrelevant* variables. We isolate the relevant variables this way because the list of irrelevant variables is stable, whereas some of the relevant variables change from project to project. Once we remuve the irrelevant variables, what remains is what we need to work with. Using this algorithm is likely to kick up only warnings, not error codes; whereas selecting *for* variable names will throw errors, thereby stopping the whole program, if any of those variables are not present in this particular data set. 
+We isolate the relevant variables by selecting what are *not* a set of *irrelevant* variables. We isolate the relevant variables this way because the list of irrelevant variables is stable, whereas some of the relevant variables change from project to project. Once we remove the irrelevant variables, what remains is what we need to work with. Using this algorithm is likely to kick up only warnings, not error codes; whereas selecting *for* variable names will throw errors, thereby stopping the whole program, if any of those variables are not present in this particular data set. 
 
 NOTE: Update "get_interesting_vars.r" if a new junk variable appears in any of the data sets. It is okay to add names that show up only rarely. 
 
