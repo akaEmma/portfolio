@@ -5,7 +5,7 @@
 # returns a tibble containing the spss-style correlation matrix.
 
 
-format_corrs <- function(M = Mca) {
+format_corrs <- function(M) {
         library(dplyr)
         irows <- tibble()
         cor_tbl <- tibble()
