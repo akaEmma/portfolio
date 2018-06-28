@@ -1,7 +1,7 @@
 # Can send this function any rcorr() output and it will return a tibble 
 # with an SPSS-style correlation matrix with r, p, and n lines alternating.
 # #
-#M the correlation output to be reformatted.
+# M = the correlation output to be reformatted.
 # returns a tibble containing the spss-style correlation matrix.
 
 
