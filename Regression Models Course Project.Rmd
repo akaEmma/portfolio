@@ -1,0 +1,169 @@
+---
+title: "Regression Models Course Project"
+author: "Sheila Braun"
+date: "July 3, 2018"
+output: 
+  pdf_document: 
+    keep_tex: yes
+    toc: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(decimal = 3, scipen = 9999)
+```
+
+##Executive Summary
+
+This report relates to the mtcars data set. It contains linear modeling analysis and responses to the following:
+
+* **Is an automatic or manual transmission better for MPG?** As of 1974 manaul transmissions were better for MPG than automatic transmissions. 
+
+* **Quantify the MPG difference between automatic and manual transmissions**. Going from an automatic (am = 0) to a manual transmission (am = 1) increases **mpg** by 11.9385, unless the car also becomes heavier by half a ton, in which case mpg actually goes down, this time by 4.1974. Since 4.1974 (loss from getting a heavier car) is less than 11.9385 (gain from switching to a manual), it would still be worth getting a manual transmission even if it made your car heavier--at least in 1974. 
+
+The final model, detailed below, accounts for .8588 of the variance (adjusted *R* squared) with a *p* value that is basically 0. 
+
+##Data
+
+The data come from Henderson and Velleman (1981), Building multiple regression models interactively. Biometrics, 37, 391–411. They are collected into a data frame with 32 observations on 11 (numeric) variables. The following table is a summary of the data.
+
+```{r summary, echo = FALSE}
+mtcars2 <- within(mtcars, {
+   vs <- factor(vs, labels = c("V", "S"))
+   am <- factor(am, labels = c("automatic", "manual"))
+   cyl  <- ordered(cyl)
+   gear <- ordered(gear)
+   carb <- ordered(carb)
+})
+summary(mtcars2)
+```
+
+See *Figure 1* in the appendix for an initial look at the relationships among the variables. On the face of it, **mpg** and **am** (automatic vs. manual transmission) have a linear relationship. However **mpg** has interesting relationships with all the variables with the possible exceptions of **gear** and **qsec**. We must look at other variables that may affect **mpg** and at any interaction terms in order to understand thoroughly the relationship between **mpg** and **am**.      
+
+###Check Assumptions###
+
+```{r shapiro, echo = FALSE, include = FALSE}
+swt <- shapiro.test(mtcars$mpg)
+swtp <- swt$p.value
+```
+
+Linear regression modeling relies on normal data for accurate results. See the appendix, Figures 2 and 3, for a histogram and qqplot of **mpg**. Neither of them looks like a lovely normal distribution should, but given a Shapiro-Wilk normality test with a p-value of `r swtp`, for now we fail to reject the null hypothesis that **mpg** is normally distributed, bearing in mind that nevertheless the data are less normally distributed than is ideal. 
+
+##Early Models##
+
+```{r everything, echo = FALSE, include = FALSE}
+fit <- lm(mpg ~ ., mtcars)
+summary(fit)$coef
+ar <- summary(fit)$adj.r.squared
+f <- summary(fit)$fstatistic
+p <- pf(f[1], f[2], f[3], lower.tail = F)
+anova(fit)
+```
+
+```{r fit2, echo = FALSE, include = FALSE}
+fit2 <- lm(mpg ~ cyl + disp + hp + drat + wt + vs + am + carb, mtcars)
+summary(fit2)$coef
+ar2 <- summary(fit2)$adj.r.squared
+f2 <- summary(fit2)$fstatistic
+p2 <- pf(f2[1], f2[2], f2[3], lower.tail = F)
+anova(fit2)
+```
+
+First, examine **mpg** as dependent variable with everything else as predictors. In this initial model, the adjusted *R* squared is high at `r ar` and the overall p-value is quite low at `r p`. An anova reveals three significant predictors: **cyl**, **disp**, and **wt**. The variable **am** is not significant in this model, but it is our variable of interest and it has a known linear relationship with **mpg** (see Figure 1 in the appendix), so this model is suspect. 
+
+The second model is similar to the first one but the two variables suspected of having little or no linear relationship with **mpg**, that is, **gear** and **qsec**, are no longer in the model. Model 2's p-value is `r p2` and the adjusted *R* squared is higher than Model 1's at `r ar2`. An anova shows significant influences of **cyl**, **disp**, and **wt** again. This model shows that we can safely exclude **gear** and **qsec**.
+
+```{r Model4, echo = FALSE, include = FALSE}
+library(Hmisc)
+hpcyl <- rcorr(mtcars$hp, mtcars$cyl)
+phc <- hpcyl$P[1,2]
+rhc <- hpcyl$r[1,2]
+cyldisp <- rcorr(mtcars$cyl, mtcars$disp)
+pcd <- cyldisp$P[1,2]
+rcd <- cyldisp$r[1,2]
+amdrat <- rcorr(mtcars$am, mtcars$drat)
+pad <- amdrat$P[1,2]
+rad <- amdrat$r[1,2]
+qv <- rcorr(mtcars$qsec, mtcars$vs)
+pqv <- qv$P[1,2]
+rqv <- qv$r[1,2]
+chp <- rcorr(mtcars$carb, mtcars$hp)
+chpp <- chp$P[1,2]
+chpr <- chp$r[1,2]
+ccyl <- rcorr(mtcars$carb, mtcars$cyl)
+ccp <- ccyl$P[1,2]
+ccr <- ccyl$r[1,2]
+```
+
+The focus of the third model was to finalize a predictor list without considering any interactions. That the variables **cyl**, **disp**, and **wt** belong in the model is possible based on results of models 1 and 2. The variable **hp** correlates so highly with cyl (*r* = `r rhc`; *p* = `r phc`) that it might be possible to leave it out while including **cyl**. Similarly, **cyl** and **disp** are not only theoretically related, but their correlation is even higher (*r* = `r rcd`; *p* = `r pcd`). Keeping **cyl** in the model makes sense, and dropping **disp** from the model also makes sense. Weight stays in because it is theoretically different from the number of cylinders or automatic vs. manual transmission and because it has shown as a strong predictor in earlier models. The variables **drat** and **am** correlate highly and could be accounting for the same phenomenon (*r* = `r rad`; *p* = `r pad`); we are interested in **am**, so we drop **drat**. The variables **qsec** and **gear** are already out of the model. The number of carburetors (**carb**) is another variable that correlates highly with **hp** (*r* = `r chpr`; *p* = `r chpp`) but not so much with the heretofore **hp** proxy, **cyl** (*r* = `r ccr`; *p* = `r ccp`). For that reason, we will put **hp** back in and leave **carb** out rather than just putting **carb** in. We do not have any reason to leave out **vs**, so it will also be in the model. 
+
+```{r model4, echo = FALSE, include = FALSE}
+fit4 <- lm(mpg ~ am + cyl + wt + hp + vs , data = mtcars)
+r4 <- summary(fit4)$adj.r.squared
+f4 <- summary(fit4)$fstatistic
+p4 <- pf(f4[1], f4[2], f4[3], lower.tail = F)
+anova(fit4)
+```
+
+Model 3 accounts for a respectable `r r4` of the total variance in **mpg** and it has a *p* value of `r p4`. The fact that the model acounts for more variance than our previous best model, despite having fewer variables, is encouraging.
+
+##Final Model##
+
+By way of creating a final model, I looked carefully at all the other models and the correlations to arrive at a final predictor list. This model contains a possible interaction term, weight x automatic vs. manual transmission. In addition, I dropped **hp** and **vs** because they performed poorly in early models. 
+
+```{r finalModel, echo = TRUE, include = TRUE}
+fit5 <- lm(mpg ~ wt + cyl + am + am * wt, mtcars)
+summary(fit5)
+```
+
+```{r echo = FALSE}
+ar5 <- summary(fit5)$adj.r.squared
+f5 <- summary(fit5)$fstatistic
+p5 <- pf(f5[1], f5[2], f5[3], lower.tail = F)
+```
+
+According to this model, mean miles per gallon is 34 when holding all other variables equal. However, for every half ton of weight, **mpg** goes down by 2.3689. Every 2 cylinders further reduces **mpg** by 1.1814. Going from an automatic (am = 0) to a manual transmission (am = 1) increases **mpg** by 11.9385, unless the car also becomes heavier by half a ton, in which case **mpg** again goes down, this time by 4.1974. Because the loss of **mpg** per extra half ton is less than the gain in **mpg** due to switching to a manual transmission, it would still be worth making the switch, at least in terms of miles per gallon--and in 1974. See Figure 3 and 4 in the appendix.
+
+```{r pagebreak, echo = FALSE}
+knitr::asis_output("\\pagebreak")
+```
+
+##Appendix
+
+```{r, echo = FALSE}
+pairs(mtcars, panel = panel.smooth, main = "Motor Trend Cars Data")
+```
+
+######*Figure 1.* Initial look at relationships among variables.
+
+```{r, echo = FALSE, fig.height = 3.25, fig.width = 3.25}
+hist(mtcars$mpg)
+qqnorm(mtcars$mpg)
+```
+
+######*Figure 2.* Normality tests for **mpg**.######
+
+
+```{r morePlots, echo = FALSE, include = TRUE, fig.height = 3, fig.width = 6}
+g = ggplot(mtcars,
+           aes(x = wt,
+               y = mpg,
+               colour = am))
+g = g + geom_point(size = 6,
+                   colour = "black") + 
+        geom_point(size = 4)
+g = g + xlab("Car Weight in Thousands of Pounds") + 
+        ylab("Miles per Gallon")
+g
+```
+
+*Figure 3.* The relationship between **mpg**, **weight**, and **am**.
+
+
+```{r residual_plots, echo = FALSE}
+opar <- par(mfrow = c(2,2), oma = c(0, 0, 1.1, 0))
+plot(fit5, las = 1)
+```
+
+
+*Figure 4*. Diagnostic plots.
