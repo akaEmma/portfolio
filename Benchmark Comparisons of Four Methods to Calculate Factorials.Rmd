@@ -3,7 +3,6 @@ title: "Comparing Four Methods for Findng Factorial"
 author: "Sheila Braun"
 date: "July 16, 2018"
 output: pdf_document
-toc: on
 ---
 
 ```{r setup, include=FALSE}
@@ -11,9 +10,15 @@ knitr::opts_chunk$set(echo = TRUE)
 options(decimal = 3, scipen = 9999)
 ```
 
-#Part 1#
-
 The objective is to write a function that computes the factorial of an integer greater than or equal to 0. The factorial of 0 is defined to be 1. Here are four different versions of the Factorial function:
+
+1. Looping method
+
+2. Reduce method
+
+3. Recursion (func) method
+
+4. Memoization with recursion method
 
 ##Factorial_loop()##
 
