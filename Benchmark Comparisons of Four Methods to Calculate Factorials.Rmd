@@ -159,4 +159,4 @@ suppressWarnings(print(
 ))
 ```
 
-The loop times seem surprisingly low. They were done with a backwards loop multiplying the previous result by the index. That saved a lot of time. Recursion with memoization also performed well, as expected. 
+Reduction took the longest amount of time. Recursion was significantly better. The loop times seem surprisingly low. They were done with a backwards loop multiplying the previous result by the index. That saved a lot of time. Recursion with memoization also performed well, as expected. If this weren't a factorial function (hence very amenable to the backwards looping method used) looping would have performed worse. 
