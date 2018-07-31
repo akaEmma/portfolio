@@ -170,7 +170,7 @@ names(b) <- clean_var_names(b)
 
 ###Tidy Variable Names: Why Lowercase?###
 
-Our data come to us with no standardization in variable naming practice. Most--but not all--of them are lowercase. In order to work with them without having constantly to double check the case for each variable, we convert them all to lowercase. Normally we could not do this, but this code is being rewritten from SPSS, which is blind to case. Our output data with variables with changed cases can, therefore be used in the original SPSS program. 
+Our data come to us with no standardization in variable naming practice. Most--but not all--of them are lowercase. In order to work with them without having constantly to double check the case for each variable, we convert them all to lowercase. Normally we could not do this, but this code is being rewritten from SPSS, which is blind to case. Our output data with variables with changed cases can, therefore, be used in the original SPSS program. 
 
 Even so, we will be putting the variable names back before returning the data set to the client. At some point we will discuss with the client finding a good naming convention for the variables and using it everywhere. 
 
