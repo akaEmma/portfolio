@@ -162,7 +162,7 @@ However, if we don't find the pattern exemplified by "opinion1_", then we don't 
 
 ###Tidy Variable Names: The Solution###
 
-The variable-changing gsub() logic in the subroutine *clean_var_names()* identifies and discards any characters before and including the first underscore. Note that some variables, like "OrgCult2_act_or", *should* have an underscore in the final variable name. After checking carefully, we have ascertained that it is safe to get rid of what prefixes the first underscore and the underscore itself, but only after checking to make sure that the data contain garbage prefixes.
+The variable-changing gsub() logic in the subroutine *clean_var_names()* identifies and discards any characters before and including the first underscore. Note that some variables, like "Org2_act_or", *should* have an underscore in the final variable name. After checking carefully, we have ascertained that it is safe to get rid of what prefixes the first underscore and the underscore itself, but only after checking to make sure that the data contain garbage prefixes.
 
 ```{r clean_var_names, echo=TRUE}
 names(b) <- clean_var_names(b)
