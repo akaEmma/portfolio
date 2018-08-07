@@ -69,7 +69,7 @@ library(lubridate)
 
 #Project Description#
 
-This code is for the projects for one of my clients. Each time we do a project, she provides a new data set, which we anlyze; then we report the findings to her in the form of a presentation that she can use to communicate the findings to *her* clients. After doing the analysis and creating the presentation slides, we merge the project's data with the main dataset that is comprised of all the previous projects and submit the presentation and the data sets (current and merged) to the client. 
+This code is for the projects for one of my clients. Each time we do a project, she provides a new data set, which we analyze; then we report the findings to her in the form of a presentation that she can use to communicate the findings to *her* clients. After doing the analysis and creating the presentation slides, we merge the project's data with the main dataset that is comprised of all the previous projects and submit the presentation and the data sets (current and merged) to the client. 
 
 Project deliverables are these:
 
