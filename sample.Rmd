@@ -191,7 +191,7 @@ NOTE: Update "get_interesting_vars.r" if a new junk variable appears in any of t
 
 ###Make Subsets and Finalize the Variable List###
 
-I've made a decision to break the data into separate tibbles rather than calling them from within the main tibble using a factor variable that would have *inputs*, *dems*, *cods* *bfts*, *cysts*, and *emus* as its levels. 
+I've made a decision to break the data into separate tibbles rather than calling them from within the main tibble using a factor variable that would have *inputs*, *dems*, *cods*, *bfts*, *cysts*, and *emus* as its levels. 
 
 The basic algorithm for finding the subsets is to look among the variable names for each subset for any names that match a list of all possible names. Any names that we *don't* find will kick up a warning. After this, we will know all the variables we have in tricky categories such as the demographics (which change from project to project) and gratitude variables (which also change from project to project). Knowing what we have in the data set dictates the contents of the slides.
 
